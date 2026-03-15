@@ -4,7 +4,7 @@ mapboxgl.accessToken = mapboxgl.accessToken = 'pk.eyJ1IjoiY2hsb2Vsb2giLCJhIjoiY2
 // Initializing map and zoom level
 const map = new mapboxgl.Map({
     container: 'map', // container id in HTML
-    style: 'mapbox://styles/mapbox/streets-v11',  // ****ADD MAP STYLE HERE *****
+    style: 'mapbox://styles/chloeloh/cmmpcjss4001z01qofhd064bp',  // ****ADD MAP STYLE HERE *****
     center: [-79.39, 43.65],  // starting point, longitude/latitude
     zoom: 11 // starting zoom level
 });
