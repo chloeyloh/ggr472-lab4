@@ -9,14 +9,14 @@ const map = new mapboxgl.Map({
     zoom: 10.5 // starting zoom level
 });
 
-// Creating empty variable
+// Creating new empty variable
 let collisionData;
 
-// Fetching data from the JSON file and storing it in the variable
+// Fetching data from the JSON file with raw URL from GitHubt repository 
 fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/pedcyc_collision_06-21%20copy.geojson')  
-    .then(response => response.json()) // Convering response to JSON format
+    .then(response => response.json()) // Converts response to JSON format
     .then(data => {
-        collisionData = data; // Storing data in the variable
-        console.log(collisionData); // Logging data to the console for verification
+        collisionData = data; // Stores data in the variable
+        console.log(collisionData); // Logs data to the console for verification
     });
 
