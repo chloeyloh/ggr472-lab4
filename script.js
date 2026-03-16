@@ -69,10 +69,9 @@ map.addSource('collis-hexgrid', {
                 source: 'collis-hexgrid',
                 paint: {
                     'fill-color': [
-                        'interpolate',
-                        ['linear'],
+                        'step',
                         ['get', 'COUNT'],
-                        0, '#f1eef6', // 0 collisions
+                        0, '#ffff', // 0 collisions
                         10, '#bdc9e1', // 1-10 collisions
                         25, '#74a9cf', // 11-25 collisions
                         maxcollisions, '#0570b0' // 26 or more collisions, using the maximum number of collisions for scaling
