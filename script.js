@@ -44,6 +44,31 @@ map.on('load', () => {
         // Counting the points to add color to the hexagons based on the number of collisions
         let maxcollisions = 0;
         collishex.features.forEach(feature => {
+            map.addSource('collis-hexgrid', {
+                type: 'geojson',
+                data: collishex
+            });
+            // Adding a layer to visualize the hexagons with a color based on the number of collisions
+            map.addLayer({
+                id: 'collis-hexgrid-layer',
+                type: 'fill',
+                source: 'collis-hexgrid',
+                paint: {
+                    'fill-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'COUNT'],
+                        0, '#f1eef6', // 0 collisions
+                        10, '#bdc9e1', // 1-10 collisions
+                        25, '#74a9cf', // 11-25 collisions
+                        maxcollisions, '#0570b0' // 26 or more collisions, using the maximum number of collisions for scaling
+                    ],
+                    'fill-opacity': 0.6,
+                    'fill-outline-color': '#ffffff'},
+                // Filtering out hexagons with no collisions to improve performance and visualization
+                filter: ['>', ['get', 'COUNT'], 0]
+            });
+                    
             // Counting number of items in the values array for each hexagon and storing it in a new property called COUNT
             feature.properties.COUNT = feature.properties.values.length;
 
