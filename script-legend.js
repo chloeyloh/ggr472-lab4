@@ -1,6 +1,6 @@
 // Define legend categories and corresponding colors for the hexagon layer
 const legendCategories = [
-    { label: '1-9 Collisions', color: '#ffffff' },
+    { label: '1-9 Collisions', color: '#f2f6ff' },
     { label: '10-24 Collisions', color: '#bdc9e1' },
     { label: '25-39 Collisions', color: '#74a9cf' },
     { label: '40+ Collisions', color: '#0570b0' },

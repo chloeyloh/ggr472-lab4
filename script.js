@@ -9,9 +9,11 @@ const map = new mapboxgl.Map({
     zoom: 10.5 // starting zoom level
 });
 
+let collisionData; // Variable to store collision data
+
 // Waiting for the map to load before adding data and layers 
 map.on('load', () => {
-    
+
     // Fetching data from the JSON file with raw URL from GitHub repository 
     fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/pedcyc_collision_06-21%20copy.geojson')
         .then(response => response.json()) // Converts response to JSON format
@@ -52,7 +54,7 @@ map.on('load', () => {
                 type: 'geojson',
                 data: collishex
             });
-            
+
             // Adding a layer to visualize the hexagons with a color based on the number of collisions
             map.addLayer({
                 id: 'collis-hexgrid-layer',
@@ -62,7 +64,7 @@ map.on('load', () => {
                     'fill-color': [
                         'step',
                         ['get', 'COUNT'],
-                        '#ffffff', // 1-9 collisions
+                        '#f2f6ff', // 1-9 collisions
                         10, '#bdc9e1', // 10-24 collisions
                         25, '#74a9cf', // 25-39 collisions
                         40, '#0570b0' // 40+ collisions
@@ -85,7 +87,7 @@ map.on('load', () => {
                     .setLngLat(e.lngLat) // Sets the position of the popup to the location of the click
                     .setHTML(`<strong>Collisions:</strong> ${count}`) // Sets the content of the popup to show the number of collisions
                     .addTo(map); // Adds the popup to the map
-            }); 
+            });
 
             // Adding interactivity to change the cursor when hovering over hexagons to indicate that they are clickable
             map.on('mouseenter', 'collis-hexgrid-layer', () => {
@@ -98,6 +100,6 @@ map.on('load', () => {
             });
         })
         .catch(error => console.error('Error loading collision data:', error)); // Logs any errors that occur during data loading
-    });
-   
+});
+
 
