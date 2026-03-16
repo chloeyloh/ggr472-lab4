@@ -13,7 +13,7 @@ const map = new mapboxgl.Map({
 let collisionData;
 
 // Fetching data from the JSON file with raw URL from GitHubt repository 
-fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/pedcyc_collision_06-21%20copy.geojson')  
+fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/pedcyc_collision_06-21%20copy.geojson')
     .then(response => response.json()) // Converts response to JSON format
     .then(data => {
         collisionData = data; // Stores data in the variable
@@ -37,6 +37,22 @@ map.on('load', () => {
             type: 'geojson',
             data: collisionData
         });
+        // Creating the hexgrid 
+        let hexgrid = turf.hexGrid(turf.bbox(collisionData), 0.5, { units: 'kilometers' });
+        // Aggregating the collision data to see which hexagons have the most collisions
+        let collishex = turf.collect(hexgrid, collisionData, '_id', 'values');
+        // Counting the points to add color to the hexagons based on the number of collisions
+        let maxcollisions = 0;
+        collishex.features.forEach(feature => {
+            // Counting number of items in the values array for each hexagon and storing it in a new property called COUNT
+            feature.properties.COUNT = feature.properties.values.length;
+
+            // Tracking the maximum number of collisions in any hexagon to use for color scaling
+            if (feature.properties.COUNT > maxcollisions) {
+                maxcollisions = feature.properties.COUNT;
+            }
+        });
     }
 });
 
+console.log('Max Collisions:', maxcollisions); // Logs the maximum number of collisions in any hexagon for verification
