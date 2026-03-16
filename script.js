@@ -65,7 +65,7 @@ fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/p
                         'fill-color': [
                             'step',
                             ['get', 'COUNT'],
-                            0, '#ffff', // 0 collisions
+                            '#ffffff', // 0 collisions
                             10, '#bdc9e1', // 1-10 collisions
                             25, '#74a9cf', // 11-25 collisions
                             maxcollisions, '#0570b0' // 26 or more collisions, using the maximum number of collisions for scaling
