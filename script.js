@@ -9,77 +9,90 @@ const map = new mapboxgl.Map({
     zoom: 10.5 // starting zoom level
 });
 
-// Creating new empty variable
-let collisionData;
-
 // Fetching data from the JSON file with raw URL from GitHubt repository 
-fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/pedcyc_collision_06-21%20copy.geojson')
-    .then(response => response.json()) // Converts response to JSON format
-    .then(data => {
-        collisionData = data; // Stores data in the variable
-        console.log("Collision data loaded:", collisionData); // Logs data to the console for verification
+map.on('load', () => {
+    fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/pedcyc_collision_06-21%20copy.geojson')
+        .then(response => response.json()) // Converts response to JSON format
+        .then(data => {
+            collisionData = data; // Stores data in the variable
+            console.log("Collision data loaded:", collisionData); // Logs data to the console for verification
 
-        // Adding the collision data as a source and layer once the map has fully loaded
-        map.on('load', () => {
-                // Create a bounding box around the collision data
-                let envelope = turf.envelope(collisionData);
+            // Create a bounding box around the collision data
+            let envelope = turf.envelope(collisionData);
+            // Increases size of box by 10% to ensure all points are included
+            let bboxScaled = turf.transformScale(envelope, 1.1);
+            // Convert the scaled bounding box to an array of coordinates for fitting the map
+            let bbox = turf.bbox(bboxScaled);
 
-                // Increases size of box by 10% to ensure all points are included
-                let bboxScaled = turf.transformScale(envelope, 1.1);
+            // Creating the hexgrid 
+            let hexgrid = turf.hexGrid(bbox, 0.5, { units: 'kilometers' });
+            // Aggregating the collision data to see which hexagons have the most collisions
+            let collishex = turf.collect(hexgrid, collisionData, '_id', 'values');
 
-                // Convert the scaled bounding box to an array of coordinates for fitting the map
-                let bbox = turf.bbox(bboxScaled);
+            // Finding the maximum number of collisions in any hexagon to use for color scaling in the visualization
+            let maxcollisions = 0;
 
-                // Creating the hexgrid 
-                let hexgrid = turf.hexGrid(bbox, 0.5, { units: 'kilometers' });
+            collishex.features.forEach(feature => {
+                // Counting number of items in the values array for each hexagon and storing it in a new property called COUNT
+                feature.properties.COUNT = feature.properties.values.length;
 
-                // Aggregating the collision data to see which hexagons have the most collisions
-                let collishex = turf.collect(hexgrid, collisionData, '_id', 'values');
-
-                // Finding the maximum number of collisions in any hexagon to use for color scaling in the visualization
-                let maxcollisions = 0;
-
-                collishex.features.forEach(feature => {
-                    // Counting number of items in the values array for each hexagon and storing it in a new property called COUNT
-                    feature.properties.COUNT = feature.properties.values.length;
-
-                    // Tracking the maximum number of collisions in any hexagon to use for color scaling
-                    if (feature.properties.COUNT > maxcollisions) {
-                        maxcollisions = feature.properties.COUNT;
-                    }
-                });
-
-                console.log('Max Collisions:', maxcollisions); // Logs the maximum number of collisions in any hexagon for verification
-
-                // Adding the hexgrid as a source and layer to visualize the collision density
-                map.addSource('collis-hexgrid', {
-                    type: 'geojson',
-                    data: collishex
-                });
-                // Adding a layer to visualize the hexagons with a color based on the number of collisions
-                map.addLayer({
-                    id: 'collis-hexgrid-layer',
-                    type: 'fill',
-                    source: 'collis-hexgrid',
-                    paint: {
-                        'fill-color': [
-                            'step',
-                            ['get', 'COUNT'],
-                            '#ffffff', // 0 collisions
-                            10, '#bdc9e1', // 1-10 collisions
-                            25, '#74a9cf', // 11-25 collisions
-                            maxcollisions, '#0570b0' // 26 or more collisions, using the maximum number of collisions for scaling
-                        ],
-                        'fill-opacity': 0.6,
-                        'fill-outline-color': '#ffffff'
-                    },
-                    // Filtering out hexagons with no collisions to improve performance and visualization
-                    filter: ['>', ['get', 'COUNT'], 0]
-                });
-
-                // Fitting the map to the bounds of the hexgrid to ensure all hexagons are visible
-                map.fitBounds(turf.bbox(bboxscaled), {
-                    padding: 20
-                });
+                // Tracking the maximum number of collisions in any hexagon to use for color scaling
+                if (feature.properties.COUNT > maxcollisions) {
+                    maxcollisions = feature.properties.COUNT;
+                }
             });
-    })
+
+            console.log('Max Collisions:', maxcollisions); // Logs the maximum number of collisions in any hexagon for verification
+
+            // Adding the hexgrid as a source and layer to visualize the collision density
+            map.addSource('collis-hexgrid', {
+                type: 'geojson',
+                data: collishex
+            });
+            
+            // Adding a layer to visualize the hexagons with a color based on the number of collisions
+            map.addLayer({
+                id: 'collis-hexgrid-layer',
+                type: 'fill',
+                source: 'collis-hexgrid',
+                paint: {
+                    'fill-color': [
+                        'step',
+                        ['get', 'COUNT'],
+                        '#ffffff', // 0 collisions
+                        10, '#bdc9e1', // 1-10 collisions
+                        25, '#74a9cf', // 11-25 collisions
+                        maxcollisions, '#0570b0' // 26 or more collisions, using the maximum number of collisions for scaling
+                    ],
+                    'fill-opacity': 0.6,
+                    'fill-outline-color': '#ffffff'
+                },
+                // Filtering out hexagons with no collisions to improve performance and visualization
+                filter: ['>', ['get', 'COUNT'], 0]
+            });
+
+            // Fitting the map to the bounds of the hexgrid to ensure all hexagons are visible
+            map.fitBounds(turf.bbox(bboxscaled), {
+                padding: 20
+            });
+
+            map.on('click', 'collis-hexgrid-layer', (e) => {
+                const count = e.features[0].properties.COUNT; // Gets the number of collisions in the clicked hexagon
+                new mapboxgl.Popup() // Creates a popup to display the number of collisions
+                    .setLngLat(e.lngLat) // Sets the position of the popup to the location of the click
+                    .setHTML(`<strong>Collisions:</strong> ${count}`) // Sets the content of the popup to show the number of collisions
+                    .addTo(map); // Adds the popup to the map
+            }); 
+
+            map.on('mouseenter', 'collis-hexgrid-layer', () => {
+                map.getCanvas().style.cursor = 'pointer'; // Changes the cursor to a pointer when hovering over a hexagon to indicate interactivity
+            });
+
+            map.on('mouseleave', 'collis-hexgrid-layer', () => {
+                map.getCanvas().style.cursor = ''; // Resets the cursor when not hovering over a hexagon
+            });
+        })
+        .catch(error => console.error('Error loading collision data:', error)); // Logs any errors that occur during data loading
+    });
+   
+
