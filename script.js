@@ -62,10 +62,10 @@ map.on('load', () => {
                     'fill-color': [
                         'step',
                         ['get', 'COUNT'],
-                        '#ffffff', // 0 collisions
-                        10, '#bdc9e1', // 1-10 collisions
-                        25, '#74a9cf', // 11-25 collisions
-                        maxcollisions, '#0570b0' // 26 or more collisions, using the maximum number of collisions for scaling
+                        '#ffffff', // 1-9 collisions
+                        10, '#bdc9e1', // 10-24 collisions
+                        25, '#74a9cf', // 25-39 collisions
+                        40, '#0570b0' // 40+ collisions
                     ],
                     'fill-opacity': 0.6,
                     'fill-outline-color': '#ffffff'
