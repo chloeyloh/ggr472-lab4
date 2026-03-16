@@ -20,3 +20,23 @@ fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/p
         console.log(collisionData); // Logs data to the console for verification
     });
 
+// Adding the collision data as a source and layer once the map has fully loaded
+map.on('load', () => {
+    // Ensures the map has loaded before trying to add the collision data as a source or layer
+    if (collisionData) {
+        // Create a bounding box around the collision data
+        let envresult = turf.envelope(collisionData);
+        // Increases size of box by 10% to ensure all points are included
+        let bboxscaled = turf.transformScale(envresult, 1.1);
+        // Fits the map to the bounding box
+        map.fitBounds(turf.bbox(bboxscaled), {
+            padding: 20
+        });
+        // Adds the collision data as a source to the map
+        map.addSource('collisions', {
+            type: 'geojson',
+            data: collisionData
+        });
+    }
+});
+
