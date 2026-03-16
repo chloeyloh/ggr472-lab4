@@ -81,3 +81,9 @@ map.addSource('collis-hexgrid', {
                 // Filtering out hexagons with no collisions to improve performance and visualization
                 filter: ['>', ['get', 'COUNT'], 0]
             });
+
+            // Fitting the map to the bounds of the hexgrid to ensure all hexagons are visible
+            map.fitBounds(turf.bbox(bboxscaled), {
+                padding: 20
+            });
+            
