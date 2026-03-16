@@ -70,7 +70,7 @@ map.on('load', () => {
                         40, '#0570b0' // 40+ collisions
                     ],
                     'fill-opacity': 0.6,
-                    'fill-outline-color': '#ffffff'
+                    'fill-outline-color': '#e6e6e6'
                 },
                 // Filtering out hexagons with no collisions to improve performance and visualization
                 filter: ['>', ['get', 'COUNT'], 0]
