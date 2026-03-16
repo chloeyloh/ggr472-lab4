@@ -17,73 +17,69 @@ fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/p
     .then(response => response.json()) // Converts response to JSON format
     .then(data => {
         collisionData = data; // Stores data in the variable
-        console.log(collisionData); // Logs data to the console for verification
-    });
+        console.log("Collision data loaded:", collisionData); // Logs data to the console for verification
 
-// Adding the collision data as a source and layer once the map has fully loaded
-map.on('load', () => {
-    // Ensures the map has loaded before trying to add the collision data as a source or layer
-    if (collisionData) {
-        // Create a bounding box around the collision data
-        let envresult = turf.envelope(collisionData);
-        // Increases size of box by 10% to ensure all points are included
-        let bboxscaled = turf.transformScale(envresult, 1.1);
-        // Fits the map to the bounding box
-        map.fitBounds(turf.bbox(bboxscaled), {
-            padding: 20
-        });
-        // Adds the collision data as a source to the map
-        map.addSource('collisions', {
-            type: 'geojson',
-            data: collisionData
-        });
-        // Creating the hexgrid 
-        let hexgrid = turf.hexGrid(turf.bbox(collisionData), 0.5, { units: 'kilometers' });
-        // Aggregating the collision data to see which hexagons have the most collisions
-        let collishex = turf.collect(hexgrid, collisionData, '_id', 'values');
-        // Counting the points to add color to the hexagons based on the number of collisions
-        let maxcollisions = 0;
-        collishex.features.forEach(feature => {
-            // Counting number of items in the values array for each hexagon and storing it in a new property called COUNT
-            feature.properties.COUNT = feature.properties.values.length;
+        // Adding the collision data as a source and layer once the map has fully loaded
+        map.on('load', () => {
+                // Create a bounding box around the collision data
+                let envelope = turf.envelope(collisionData);
 
-            // Tracking the maximum number of collisions in any hexagon to use for color scaling
-            if (feature.properties.COUNT > maxcollisions) {
-                maxcollisions = feature.properties.COUNT;
-            }
-        });
-    }
-});
+                // Increases size of box by 10% to ensure all points are included
+                let bboxScaled = turf.transformScale(envelope, 1.1);
 
-console.log('Max Collisions:', maxcollisions); // Logs the maximum number of collisions in any hexagon for verification
+                // Convert the scaled bounding box to an array of coordinates for fitting the map
+                let bbox = turf.bbox(bboxScaled);
 
-// Adding the hexgrid as a source and layer to visualize the collision density
-map.addSource('collis-hexgrid', {
-                type: 'geojson',
-                data: collishex
+                // Creating the hexgrid 
+                let hexgrid = turf.hexGrid(bbox, 0.5, { units: 'kilometers' });
+
+                // Aggregating the collision data to see which hexagons have the most collisions
+                let collishex = turf.collect(hexgrid, collisionData, '_id', 'values');
+
+                // Finding the maximum number of collisions in any hexagon to use for color scaling in the visualization
+                let maxcollisions = 0;
+
+                collishex.features.forEach(feature => {
+                    // Counting number of items in the values array for each hexagon and storing it in a new property called COUNT
+                    feature.properties.COUNT = feature.properties.values.length;
+
+                    // Tracking the maximum number of collisions in any hexagon to use for color scaling
+                    if (feature.properties.COUNT > maxcollisions) {
+                        maxcollisions = feature.properties.COUNT;
+                    }
+                });
+
+                console.log('Max Collisions:', maxcollisions); // Logs the maximum number of collisions in any hexagon for verification
+
+                // Adding the hexgrid as a source and layer to visualize the collision density
+                map.addSource('collis-hexgrid', {
+                    type: 'geojson',
+                    data: collishex
+                });
+                // Adding a layer to visualize the hexagons with a color based on the number of collisions
+                map.addLayer({
+                    id: 'collis-hexgrid-layer',
+                    type: 'fill',
+                    source: 'collis-hexgrid',
+                    paint: {
+                        'fill-color': [
+                            'step',
+                            ['get', 'COUNT'],
+                            0, '#ffff', // 0 collisions
+                            10, '#bdc9e1', // 1-10 collisions
+                            25, '#74a9cf', // 11-25 collisions
+                            maxcollisions, '#0570b0' // 26 or more collisions, using the maximum number of collisions for scaling
+                        ],
+                        'fill-opacity': 0.6,
+                        'fill-outline-color': '#ffffff'
+                    },
+                    // Filtering out hexagons with no collisions to improve performance and visualization
+                    filter: ['>', ['get', 'COUNT'], 0]
+                });
+
+                // Fitting the map to the bounds of the hexgrid to ensure all hexagons are visible
+                map.fitBounds(turf.bbox(bboxscaled), {
+                    padding: 20
+                });
             });
-            // Adding a layer to visualize the hexagons with a color based on the number of collisions
-            map.addLayer({
-                id: 'collis-hexgrid-layer',
-                type: 'fill',
-                source: 'collis-hexgrid',
-                paint: {
-                    'fill-color': [
-                        'step',
-                        ['get', 'COUNT'],
-                        0, '#ffff', // 0 collisions
-                        10, '#bdc9e1', // 1-10 collisions
-                        25, '#74a9cf', // 11-25 collisions
-                        maxcollisions, '#0570b0' // 26 or more collisions, using the maximum number of collisions for scaling
-                    ],
-                    'fill-opacity': 0.6,
-                    'fill-outline-color': '#ffffff'},
-                // Filtering out hexagons with no collisions to improve performance and visualization
-                filter: ['>', ['get', 'COUNT'], 0]
-            });
-
-            // Fitting the map to the bounds of the hexgrid to ensure all hexagons are visible
-            map.fitBounds(turf.bbox(bboxscaled), {
-                padding: 20
-            });
-            
+    })
