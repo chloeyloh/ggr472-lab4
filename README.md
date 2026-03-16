@@ -34,5 +34,6 @@ Motor Vehicle Collisions Involving Killed or Seriously Injured Persons
 
 https://open.toronto.ca/dataset/motor-vehicle-collisions-involving-killed-or-seriously-injured-persons/
 
-**Author**: Chloe Loh 
+**Author**: Chloe Loh
+
 **Course**: GGR472 - Developing Web Maps
