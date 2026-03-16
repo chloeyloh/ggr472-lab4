@@ -9,8 +9,10 @@ const map = new mapboxgl.Map({
     zoom: 10.5 // starting zoom level
 });
 
-// Fetching data from the JSON file with raw URL from GitHubt repository 
+// Waiting for the map to load before adding data and layers 
 map.on('load', () => {
+    
+    // Fetching data from the JSON file with raw URL from GitHub repository 
     fetch('https://raw.githubusercontent.com/chloeyloh/ggr472-lab4/refs/heads/main/pedcyc_collision_06-21%20copy.geojson')
         .then(response => response.json()) // Converts response to JSON format
         .then(data => {
@@ -32,6 +34,7 @@ map.on('load', () => {
             // Finding the maximum number of collisions in any hexagon to use for color scaling in the visualization
             let maxcollisions = 0;
 
+            // Looping through each hexagon feature to count the number of collisions and find the maximum count
             collishex.features.forEach(feature => {
                 // Counting number of items in the values array for each hexagon and storing it in a new property called COUNT
                 feature.properties.COUNT = feature.properties.values.length;
@@ -72,7 +75,7 @@ map.on('load', () => {
             });
 
             // Fitting the map to the bounds of the hexgrid to ensure all hexagons are visible
-            map.fitBounds(turf.bbox(bboxscaled), {
+            map.fitBounds(turf.bbox(bboxScaled), {
                 padding: 20
             });
 
@@ -84,12 +87,14 @@ map.on('load', () => {
                     .addTo(map); // Adds the popup to the map
             }); 
 
+            // Adding interactivity to change the cursor when hovering over hexagons to indicate that they are clickable
             map.on('mouseenter', 'collis-hexgrid-layer', () => {
                 map.getCanvas().style.cursor = 'pointer'; // Changes the cursor to a pointer when hovering over a hexagon to indicate interactivity
             });
 
+            // Resets the cursor when not hovering over a hexagon to return to the default cursor
             map.on('mouseleave', 'collis-hexgrid-layer', () => {
-                map.getCanvas().style.cursor = ''; // Resets the cursor when not hovering over a hexagon
+                map.getCanvas().style.cursor = ''; // Resets the cursor to default
             });
         })
         .catch(error => console.error('Error loading collision data:', error)); // Logs any errors that occur during data loading
